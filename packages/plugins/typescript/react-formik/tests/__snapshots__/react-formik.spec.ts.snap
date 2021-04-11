@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`React Apollo Forms should generate a Form 1`] = `
+"
+        asdf
+        export const testMutationDefaultValues = {
+          nameVar?: undefined
+        };
+        export const TestMutationForm = () => {
+          return (<Formik></Formik>)
+        };
+    "
+`;
