@@ -57,7 +57,7 @@ export class ReactFormikVisitor extends ClientSideBaseVisitor<ReactFormikRawPlug
   renderFormElement(metaData: TypeNodeMetaData) {
     if (metaData.children) return metaData.children.map(this.renderFormElement);
     if (metaData.isPrimitive) return `<input type="${metaData.tsType}" />`;
-    return metaData.tsType + ': ' + this._schema.getType(metaData.tsType).toJSON();
+    return metaData.tsType + ': ' + this.scalars;
   }
   public get sdkContent() {
     return (
