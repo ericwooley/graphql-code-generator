@@ -2,6 +2,8 @@ import * as Types from '../types.d';
 
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
+import * as React from 'react';
+import { Formik, Form, FormikConfig } from 'formik';
 const defaultOptions = {};
 export type HeroParentTypeDependentFieldQueryVariables = Types.Exact<{
   episode?: Types.Maybe<Types.Episode>;
@@ -101,3 +103,7 @@ export type HeroParentTypeDependentFieldQueryResult = Apollo.QueryResult<
   HeroParentTypeDependentFieldQuery,
   HeroParentTypeDependentFieldQueryVariables
 >;
+
+/****************************
+ * Formik Forms
+ * *************************/

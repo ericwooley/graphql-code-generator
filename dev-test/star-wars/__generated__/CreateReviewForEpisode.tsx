@@ -2,6 +2,8 @@ import * as Types from '../types.d';
 
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
+import * as React from 'react';
+import { Formik, Form, FormikConfig } from 'formik';
 const defaultOptions = {};
 export type CreateReviewForEpisodeMutationVariables = Types.Exact<{
   episode: Types.Episode;
@@ -58,3 +60,32 @@ export type CreateReviewForEpisodeMutationOptions = Apollo.BaseMutationOptions<
   CreateReviewForEpisodeMutation,
   CreateReviewForEpisodeMutationVariables
 >;
+
+/****************************
+ * Formik Forms
+ * *************************/
+
+export const createReviewForEpisodeDefaultValues = {
+  episode: undefined,
+  review: undefined,
+};
+
+export interface CreateReviewForEpisodeFormVariables {
+  episode: Episode;
+  review: ReviewInput;
+}
+export const CreateReviewForEpisodeForm = ({
+  initialValues,
+  onSubmit,
+  ...formikProps
+}: FormikConfig<CreateReviewForEpisodeFormVariables>) => {
+  return (
+    <Formik
+      onSubmit={onSubmit}
+      initialValues={{ ...createReviewForEpisodeDefaultValues, ...initialValues }}
+      {...formikProps}
+    >
+      <Form>Episode: Episode ReviewInput: ReviewInput</Form>
+    </Formik>
+  );
+};

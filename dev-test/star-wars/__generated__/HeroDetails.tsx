@@ -2,6 +2,8 @@ import * as Types from '../types.d';
 
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
+import * as React from 'react';
+import { Formik, Form, FormikConfig } from 'formik';
 const defaultOptions = {};
 export type HeroDetailsQueryVariables = Types.Exact<{
   episode?: Types.Maybe<Types.Episode>;
@@ -59,3 +61,7 @@ export function useHeroDetailsLazyQuery(
 export type HeroDetailsQueryHookResult = ReturnType<typeof useHeroDetailsQuery>;
 export type HeroDetailsLazyQueryHookResult = ReturnType<typeof useHeroDetailsLazyQuery>;
 export type HeroDetailsQueryResult = Apollo.QueryResult<HeroDetailsQuery, HeroDetailsQueryVariables>;
+
+/****************************
+ * Formik Forms
+ * *************************/

@@ -312,6 +312,7 @@ generates:
     plugins:
       - typescript-operations
       - typescript-react-apollo
+      - typescript-react-formik
   ./dev-test/modules/:
     schema: ./dev-test/modules/*/types/*.graphql
     preset: graphql-modules

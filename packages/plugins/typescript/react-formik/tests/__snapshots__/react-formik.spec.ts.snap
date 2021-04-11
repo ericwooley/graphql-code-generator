@@ -2,12 +2,26 @@
 
 exports[`React Apollo Forms should generate a Form 1`] = `
 "
-        asdf
-        export const testMutationDefaultValues = {
-          nameVar?: undefined
-        };
-        export const TestMutationForm = () => {
-          return (<Formik></Formik>)
-        };
+/****************************
+ * Formik Forms
+ * *************************/
+
+export const createReviewForEpisodeDefaultValues = {
+  episode: undefined,
+review: undefined
+};
+
+export interface CreateReviewForEpisodeFormVariables {
+  episode: Episode,
+review: ReviewInput
+}
+export const CreateReviewForEpisodeForm = ({  initialValues, onSubmit, ...formikProps}: FormikConfig<CreateReviewForEpisodeFormVariables>) => {
+  return (<Formik onSubmit={onSubmit} initialValues={{...createReviewForEpisodeDefaultValues, ...initialValues}} {...formikProps}>
+    <Form>
+    Episode: Episode
+    ReviewInput: ReviewInput
+    </Form>
+  </Formik>)
+};
     "
 `;

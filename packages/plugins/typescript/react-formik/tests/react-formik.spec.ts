@@ -16,37 +16,23 @@ describe('React Apollo', () => {
     spyConsoleError.mockRestore();
   });
 
-  const schema = buildClientSchema(require('../../../../../dev-test/githunt/schema.json'));
+  const schema = buildClientSchema(require('../../../../../dev-test/star-wars/schema.json').data);
   const basicDoc = parse(/* GraphQL */ `
-    query test {
-      feed {
-        id
-        commentCount
-        repository {
-          full_name
-          html_url
-          owner {
-            avatar_url
-          }
-        }
+    query HeroAppearsIn {
+      hero {
+        name
+        appearsIn
       }
     }
   `);
   const mutationDoc = parse(/* GraphQL */ `
-    mutation testMutation($nameVar: String) {
-      submitRepository(repoFullName: $nameVar) {
-        id
+    mutation CreateReviewForEpisode($episode: Episode!, $review: ReviewInput!) {
+      createReview(episode: $episode, review: $review) {
+        stars
+        commentary
       }
     }
   `);
-
-  // const subscriptionDoc = parse(/* GraphQL */ `
-  //   subscription test($name: String) {
-  //     commentAdded(repoFullName: $name) {
-  //       id
-  //     }
-  //   }
-  // `);
 
   const validateTypeScript = async (
     output: Types.PluginOutput,
@@ -57,6 +43,7 @@ describe('React Apollo', () => {
     const tsOutput = await tsPlugin(testSchema, documents, config, { outputFile: '' });
     const tsDocumentsOutput = await tsDocumentsPlugin(testSchema, documents, config, { outputFile: '' });
     const merged = mergeOutputs([tsOutput, tsDocumentsOutput, output]);
+    // process.stdout.write(`\n\n---------- merged \n${merged}\n`);
     validateTs(merged, undefined, true, false, [`Cannot find namespace 'Types'.`]);
 
     return merged;
@@ -75,7 +62,7 @@ describe('React Apollo', () => {
       )) as Types.ComplexPluginOutput;
 
       expect(content.prepend).toContain(`import * as React from 'react';`);
-      expect(content.prepend).toContain(`import { Formik, Form } from 'formik'`);
+      expect(content.prepend).toContain(`import { Formik, Form, FormikConfig } from 'formik'`);
       await validateTypeScript(content, schema, docs, {});
     });
   });
@@ -90,7 +77,6 @@ describe('React Apollo', () => {
           outputFile: 'graphql.tsx',
         }
       )) as Types.ComplexPluginOutput;
-
       expect(content.content).toMatchSnapshot();
       await validateTypeScript(content, schema, docs, {});
     });
