@@ -25,40 +25,9 @@ export const plugin: PluginFunction<ReactFormikRawPluginConfig, Types.ComplexPlu
   ];
 
   const visitor = new ReactFormikVisitor(schema, allFragments, config, documents);
-  // const visitorResult =
+
   visit(allAst, { leave: visitor });
-  visit(allAst, {
-    leave: new Proxy(
-      {},
-      {
-        get: (target, prop) => {
-          return node => {
-            if (['Name', 'Field'].includes(node.kind)) return;
-            if (JSON.stringify(node).indexOf('ReviewInput') !== -1) {
-              // eslint-disable-next-line no-console
-              console.info(prop, node);
-            }
-          };
-        },
-      }
-    ),
-  });
-  visit(schema.astNode, {
-    leave: new Proxy(
-      {},
-      {
-        get: (target, prop) => {
-          return node => {
-            if (['Name', 'Field'].includes(node.kind)) return;
-            if (JSON.stringify(node).indexOf('ReviewInput') !== -1) {
-              // eslint-disable-next-line no-console
-              console.info(prop, node);
-            }
-          };
-        },
-      }
-    ),
-  });
+
   return {
     prepend: visitor.formikImports(),
     content: [visitor.sdkContent].join('\n'),

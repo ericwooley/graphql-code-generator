@@ -71,7 +71,7 @@ export const createReviewForEpisodeDefaultValues = {
 };
 
 export interface CreateReviewForEpisodeFormVariables {
-  episode: Episode;
+  episode: string;
   review: ReviewInput;
 }
 export const CreateReviewForEpisodeForm = ({
@@ -85,7 +85,38 @@ export const CreateReviewForEpisodeForm = ({
       initialValues={{ ...createReviewForEpisodeDefaultValues, ...initialValues }}
       {...formikProps}
     >
-      <Form>Episode: Episode ReviewInput: ReviewInput</Form>
+      <Form>
+        <label>
+          <h5>episode</h5>
+          <input name="episode" type="string" />
+        </label>
+        <div>
+          <h4>review</h4>
+          <label>
+            <h5>review.stars</h5>
+            <input name="review.stars" type="Scalars.Int" />
+          </label>
+          <label>
+            <h5>review.commentary</h5>
+            <input name="review.commentary" type="Scalars.String" />
+          </label>
+          <div>
+            <h4>review.favoriteColor</h4>
+            <label>
+              <h5>review.favoriteColor.red</h5>
+              <input name="review.favoriteColor.red" type="Scalars.Int" />
+            </label>
+            <label>
+              <h5>review.favoriteColor.green</h5>
+              <input name="review.favoriteColor.green" type="Scalars.Int" />
+            </label>
+            <label>
+              <h5>review.favoriteColor.blue</h5>
+              <input name="review.favoriteColor.blue" type="Scalars.Int" />
+            </label>
+          </div>
+        </div>
+      </Form>
     </Formik>
   );
 };

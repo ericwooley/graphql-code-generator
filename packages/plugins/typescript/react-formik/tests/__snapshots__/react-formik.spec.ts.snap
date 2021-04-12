@@ -18,8 +18,11 @@ review: ReviewInput
 export const CreateReviewForEpisodeForm = ({  initialValues, onSubmit, ...formikProps}: FormikConfig<CreateReviewForEpisodeFormVariables>) => {
   return (<Formik onSubmit={onSubmit} initialValues={{...createReviewForEpisodeDefaultValues, ...initialValues}} {...formikProps}>
     <Form>
-    Episode: [object GraphQLSchema]
-    ReviewInput: [object GraphQLSchema]
+    episode: Episode
+    review
+review.stars: Scalars.Int
+  review.commentary: Scalars.String
+  review.favoriteColor: 
     </Form>
   </Formik>)
 };

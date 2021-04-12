@@ -5,9 +5,18 @@ import {
 } from '@graphql-codegen/visitor-plugin-common';
 import { ReactFormikRawPluginConfig } from './config';
 import autoBind from 'auto-bind';
-import { GraphQLSchema, OperationDefinitionNode, TypeNode, VariableDefinitionNode } from 'graphql';
+import {
+  GraphQLNamedType,
+  GraphQLScalarType,
+  GraphQLScalarTypeConfig,
+  GraphQLSchema,
+  OperationDefinitionNode,
+  TypeNode,
+  VariableDefinitionNode,
+} from 'graphql';
 import { Types } from '@graphql-codegen/plugin-helpers';
 import { camelCase, pascalCase } from 'change-case-all';
+import { TypeMap } from 'graphql/type/schema';
 
 export interface ReactFormikConfig extends ClientSideBasePluginConfig {}
 
@@ -19,6 +28,7 @@ export class ReactFormikVisitor extends ClientSideBaseVisitor<ReactFormikRawPlug
     name: string;
     variables: (TypeNodeMetaData & { name: string })[];
   }[] = [];
+  schema: GraphQLSchema;
   constructor(
     schema: GraphQLSchema,
     fragments: LoadedFragment[],
@@ -26,6 +36,7 @@ export class ReactFormikVisitor extends ClientSideBaseVisitor<ReactFormikRawPlug
     documents: Types.DocumentFile[]
   ) {
     super(schema, fragments, rawConfig, {});
+    this.schema = schema;
     this._documents = documents;
     autoBind(this);
   }
@@ -44,7 +55,7 @@ export class ReactFormikVisitor extends ClientSideBaseVisitor<ReactFormikRawPlug
     if (node.operation !== 'mutation') return null;
     const mutationData = {
       name: node.name.value,
-      variables: node.variableDefinitions.map(varDefToVar),
+      variables: node.variableDefinitions.map(v => varDefToVar(v, this.schema.getTypeMap())),
     };
     this._mutations.push(mutationData);
     this._operationsToInclude.push({
@@ -55,9 +66,9 @@ export class ReactFormikVisitor extends ClientSideBaseVisitor<ReactFormikRawPlug
   }
 
   renderFormElement(metaData: TypeNodeMetaData) {
-    if (metaData.children) return metaData.children.map(this.renderFormElement);
-    if (metaData.isPrimitive) return `<input type="${metaData.tsType}" />`;
-    return metaData.tsType + ': ' + this.scalars;
+    if (metaData.children)
+      return `<div><h4>${metaData.name}</h4>${metaData.children.map(this.renderFormElement).join('\n  ')}</div>`;
+    return `<label><h5>${metaData.name}</h5><input name="${metaData.name}" type="${metaData.tsType}" /></label>`;
   }
   public get sdkContent() {
     return (
@@ -101,51 +112,158 @@ const PrimitiveMaps: { [k: string]: { type: string; defaultVal: string } } = {
   ID: { type: 'Scalars.ID', defaultVal: JSON.stringify('') },
 };
 
-export function varDefToVar(varDef: VariableDefinitionNode): TypeNodeMetaData & { name: string } {
-  const typeData = getTypeNodeMeta(varDef.type);
+export function varDefToVar(varDef: VariableDefinitionNode, types: TypeMap): TypeNodeMetaData {
+  const typeData = getTypeNodeMeta(varDef.type, varDef.variable.name.value, types);
   return {
     ...typeData,
-    name: varDef.variable.name.value,
   };
 }
 
 interface TypeNodeMetaData {
+  name: string;
   tsType: string;
   defaultVal: string;
   optional: boolean;
-  children?: Array<TypeNodeMetaData>;
-  isPrimitive: boolean;
+  children?: Array<TypeNodeMetaData> | null;
 }
 
-export function getTypeNodeMeta(type: TypeNode): TypeNodeMetaData {
+export function typeDefToTypeNodeMetaData(
+  typeDef: GraphQLNamedType & {
+    // seems like this is only for enums
+    _values?: GraphqlEnumValues[];
+    // this is the good stuff
+    _fields?: {
+      [key: string]: GraphQLScalarTypeConfig<unknown, unknown> & {
+        type?: string | ({ ofType?: GraphQLScalarType } & GraphQLScalarType);
+      };
+    };
+  },
+  name: string,
+  types: TypeMap
+) {
+  /* eslint-disable prefer-const */
+  let tsType = typeDef.name;
+  let defaultVal = JSON.stringify('undefined');
+  let optional = true;
+  let children: TypeNodeMetaData[] = null;
+  /* eslint-enable prefer-const */
+  if (typeDef._fields) {
+    const typeDefFields = Object.fromEntries(
+      Object.entries(typeDef._fields)
+        .filter(([, child]) => child.type)
+        .map(([childName, child]) => {
+          return [childName, graphQLScalarTypeConfigToTypeNoDeMetaData(child, `${name}.${childName}`, types)];
+        })
+    );
+    children = Object.values(typeDefFields);
+  } else if (typeDef._values) {
+    defaultVal = typeDef._values[0].value;
+    tsType = typeof defaultVal;
+  }
+  return {
+    name,
+    tsType,
+    defaultVal,
+    optional,
+    children,
+  };
+}
+
+export function graphQLScalarTypeConfigToTypeNoDeMetaData(
+  scalar: GraphQLScalarTypeConfig<unknown, unknown> & {
+    type?: string | ({ ofType?: GraphQLScalarType } & GraphQLScalarType);
+  },
+  name: string,
+  types: TypeMap
+): TypeNodeMetaData {
+  /* eslint-disable prefer-const */
   let tsType = '';
   let defaultVal = JSON.stringify('undefined');
   let optional = true;
-  let children = undefined;
-  let isPrimitive = false;
+  let children: TypeNodeMetaData[] = null;
+  /* eslint-enable prefer-const */
+  let scalarName = '';
+  if (!scalar.type) throw new Error(`No type for ${scalar.name}`);
+  if (typeof scalar.type === 'string') {
+    scalarName = scalar.type;
+  } else if (scalar.type['ofType']) {
+    scalarName = scalar.type.ofType.name;
+  } else {
+    scalarName = scalar.type.name;
+  }
+
+  const type = types[scalarName];
+  if (!type) throw new Error(`scalar not found: ${scalarName}`);
+  if (PrimitiveMaps[type.name]) {
+    defaultVal = PrimitiveMaps[type.name].defaultVal;
+    tsType = PrimitiveMaps[type.name].type;
+  } else {
+    return typeDefToTypeNodeMetaData(type, name, types);
+  }
+
+  return {
+    defaultVal,
+    name,
+    optional,
+    tsType,
+    children,
+  };
+}
+
+export function getTypeNodeMeta(type: TypeNode, name: string, types: TypeMap): TypeNodeMetaData {
+  let tsType = '';
+  let defaultVal = JSON.stringify('undefined');
+  let optional = true;
+  let children: TypeNodeMetaData[] = null;
   if (type.kind === 'NamedType') {
     if (PrimitiveMaps[type.name.value]) {
-      isPrimitive = true;
       tsType = PrimitiveMaps[type.name.value].type;
       defaultVal = PrimitiveMaps[type.name.value].defaultVal;
     } else {
       tsType = type.name.value;
+      const typeDef: GraphQLNamedType & {
+        // seems like this is only for enums
+        _values?: GraphqlEnumValues[];
+        // this is the good stuff
+        _fields?: {
+          [key: string]: GraphQLScalarTypeConfig<unknown, unknown> & {
+            type?: string | ({ ofType?: GraphQLScalarType } & GraphQLScalarType);
+          };
+        };
+      } = types[type.name.value];
+      if (typeDef) {
+        const lifted = typeDefToTypeNodeMetaData(typeDef, name, types);
+        optional = lifted.optional;
+        children = lifted.children;
+        tsType = lifted.tsType;
+        defaultVal = lifted.defaultVal;
+      }
     }
   } else if (type.kind === 'ListType') {
-    children = getTypeNodeMeta(type.type);
-    tsType = children.tsType + '[]';
+    children = [getTypeNodeMeta(type.type, name + '[i]', types)];
+    tsType = children[0].tsType + '[]';
     defaultVal = JSON.stringify([]);
   } else {
     optional = false;
-    const lifted = getTypeNodeMeta(type.type);
+    const childName = type.type.kind === 'ListType' ? `${name}[i]` : `${name}`;
+    const lifted = getTypeNodeMeta(type.type, childName, types);
+    children = lifted.children;
     tsType = lifted.tsType;
     defaultVal = lifted.defaultVal;
   }
   return {
-    isPrimitive,
+    name,
     tsType,
     optional,
     defaultVal,
     children,
   };
+}
+
+export interface GraphqlEnumValues {
+  name: string;
+  description: string;
+  value: string;
+  isDeprecated: boolean;
+  deprecationReason: null;
 }
