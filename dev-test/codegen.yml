@@ -2,6 +2,13 @@ hooks:
   afterAllFileWrite:
     - prettier --write
 generates:
+  ./dev-test/test-schema/formik.tsx:
+    schema: ./dev-test/test-schema/schema-with-mutation.graphql
+    documents: ./dev-test/test-schema/**/*.graphql
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-formik
   ./dev-test/test-schema/resolvers-types.ts:
     schema: ./dev-test/test-schema/schema-text.js
     plugins:
