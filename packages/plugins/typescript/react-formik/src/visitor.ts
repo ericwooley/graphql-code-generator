@@ -13,6 +13,9 @@ import {
   OperationDefinitionNode,
   TypeNode,
   VariableDefinitionNode,
+  isNonNullType,
+  isListType,
+  getNamedType,
 } from 'graphql';
 import { Types } from '@graphql-codegen/plugin-helpers';
 import { camelCase, pascalCase } from 'change-case-all';
@@ -68,12 +71,17 @@ export class ReactFormikVisitor extends ClientSideBaseVisitor<ReactFormikRawPlug
     return null;
   }
 
-  createComponentFor(metaData: TypeNodeMetaData) {
-    if (this._typeComponentMap[metaData.scalarName]) return this._typeComponentMap[metaData.scalarName];
+  getComponentFor(metaData: TypeNodeMetaData) {
+    const componentKey = metaData.scalarName + metaData.childrenAsList ? 'AsList' : '';
+    if (this._typeComponentMap[componentKey]) return this._typeComponentMap[componentKey];
+    if (metaData.childrenAsList) return `${metaData} list`;
+    if (metaData.endedFromCycle) return `touch to load more`;
+    if (metaData.children)
+      return `<div><h4>${metaData.name}</h4>${metaData.children.map(this.renderFormElement).join('\n  ')}</div>`;
     const component = `const () => {
       return <input type="${metaData.scalarName}" name="${metaData.name}">
     }`;
-
+    this._typeComponentMap[componentKey] = component;
     return component;
   }
 
@@ -125,13 +133,12 @@ const PrimitiveMaps: { [k: string]: { type: string; defaultVal: string } } = {
 };
 
 export function varDefToVar(varDef: VariableDefinitionNode, types: TypeMap): TypeNodeMetaData {
-  return getTypeNodeMeta(varDef.type, varDef.variable.name.value, types, 0);
+  return getTypeNodeMeta(varDef.type, varDef.variable.name.value, types, 0, []);
 }
-interface CycleReference {
-  chain: string[];
-  scalarName: string;
-}
+
 interface TypeNodeMetaData {
+  accessChain: string[];
+  endedFromCycle: boolean;
   name: string;
   tsType: string;
   scalarName: string;
@@ -162,20 +169,25 @@ export function typeDefToTypeNodeMetaData(
   let defaultVal = JSON.stringify('undefined');
   let optional = true;
   let children: TypeNodeMetaData[] = null;
+  let endedFromCycle = false;
   /* eslint-enable prefer-const */
+  if (parentTree.includes(typeDef.name)) {
+    endedFromCycle = true;
+  }
   if (PrimitiveMaps[typeDef.name]) {
     defaultVal = PrimitiveMaps[typeDef.name].defaultVal;
     tsType = PrimitiveMaps[typeDef.name].type;
-  } else if (typeDef._fields) {
+  } else if (typeDef._fields && !endedFromCycle) {
     const typeDefFields = Object.fromEntries(
       Object.entries(typeDef._fields)
         .filter(([, child]) => child.type)
         .map(([childName, child]) => {
+          const [childNode, required, isList] = scalarTypeConfigToNamedType(child, types);
           return [
             childName,
-            graphQLScalarTypeConfigToTypeNoDeMetaData(child, `${name}.${childName}`, types, depth + 1, [
+            typeDefToTypeNodeMetaData(childNode, `${name}.${childName}`, types, depth + 1, [
               ...parentTree,
-              name,
+              typeDef.name,
             ]),
           ];
         })
@@ -186,6 +198,8 @@ export function typeDefToTypeNodeMetaData(
     tsType = typeof defaultVal;
   }
   return {
+    accessChain: [...parentTree, typeDef.name],
+    endedFromCycle,
     scalarName: typeDef.name,
     name,
     tsType,
@@ -195,18 +209,20 @@ export function typeDefToTypeNodeMetaData(
   };
 }
 
-export function graphQLScalarTypeConfigToTypeNoDeMetaData(
+export function scalarTypeConfigToNamedType(
   scalar: GraphQLScalarTypeConfig<unknown, unknown> & {
-    type?: string | ({ ofType?: GraphQLScalarType } & GraphQLScalarType);
+    type?: string | ({ ofType?: GraphQLScalarType & { ofType?: GraphQLScalarType } } & GraphQLScalarType);
   },
-  name: string,
-  types: TypeMap,
-  depth: number,
-  parentTree: string[]
-): TypeNodeMetaData {
+  types: TypeMap
+): [type: GraphQLNamedType, required: boolean, list: boolean] {
+  if (!scalar.type) {
+    throw new Error(`No type for ${scalar.name}`);
+  }
   let scalarName = '';
+  const required = !isNonNullType(scalar.type);
+  const list = isListType(scalar.type);
   /* eslint-enable prefer-const */
-  if (!scalar.type) throw new Error(`No type for ${scalar.name}`);
+
   if (typeof scalar.type === 'string') {
     scalarName = scalar.type;
   } else if (scalar.type['ofType']) {
@@ -216,9 +232,11 @@ export function graphQLScalarTypeConfigToTypeNoDeMetaData(
   }
 
   const type = types[scalarName];
-  if (!type) throw new Error(`scalar not found: ${scalarName}`);
+  if (!type) {
+    throw new Error(`scalar not found: ${scalarName}`);
+  }
 
-  return typeDefToTypeNodeMetaData(type, name, types, depth + 1, parentTree);
+  return [type, required, list];
 }
 
 export function getTypeNodeMeta(
@@ -249,6 +267,8 @@ export function getTypeNodeMeta(
     } = types[type.name.value];
     if (typeDef) return typeDefToTypeNodeMetaData(typeDef, name, types, depth + 1, parentTree);
     return {
+      accessChain: [],
+      endedFromCycle: false,
       childrenAsList,
       scalarName,
       name,

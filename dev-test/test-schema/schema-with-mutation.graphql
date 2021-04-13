@@ -9,7 +9,7 @@ input UserInput {
   id: Int!
   name: String!
   email: String!
-  mother: UserInput!
+  mother: UserInput
   father: UserInput
   friends: [UserInput]!
 }

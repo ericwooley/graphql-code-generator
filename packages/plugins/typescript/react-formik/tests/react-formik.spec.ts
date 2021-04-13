@@ -1,9 +1,11 @@
 import { validateTs } from '@graphql-codegen/testing';
 import { plugin } from '../src/index';
-import { parse, GraphQLSchema, buildClientSchema } from 'graphql';
+import { parse, GraphQLSchema, buildSchema } from 'graphql';
 import { Types, mergeOutputs } from '@graphql-codegen/plugin-helpers';
 import { plugin as tsPlugin } from '../../typescript/src/index';
 import { plugin as tsDocumentsPlugin } from '../../operations/src/index';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 describe('React Apollo', () => {
   let spyConsoleError: jest.SpyInstance;
@@ -15,40 +17,23 @@ describe('React Apollo', () => {
   afterEach(() => {
     spyConsoleError.mockRestore();
   });
+  const rawGqlFile = readFileSync(
+    join(__dirname, '../../../../../dev-test/test-schema/schema-with-mutation.graphql')
+  ).toString();
 
-  const schema = buildClientSchema(require('../../../../../dev-test/star-wars/schema.json').data);
+  const schema = buildSchema(rawGqlFile);
   const basicDoc = parse(/* GraphQL */ `
-    query HeroAppearsIn {
-      hero {
-        name
-        appearsIn
+    query users {
+      allUsers {
+        id
       }
     }
   `);
   const mutationDoc = parse(/* GraphQL */ `
-    mutation CreateReviewForEpisode($episode: Episode!, $review: ReviewInput!) {
-      createReview(episode: $episode, review: $review) {
-        stars
-        commentary
+    mutation addUsers($users: [UserInput]!) {
+      addUsers(users: $users) {
+        id
       }
-    }
-    # The input object sent when someone is creating a new review
-    input ReviewInput {
-      # 0-5 stars
-      stars: Int!
-      # Comment about the movie, optional
-      commentary: String
-      # Favorite color, optional
-      favorite_color: ColorInput
-    }
-    # The episodes in the Star Wars trilogy
-    enum Episode {
-      # Star Wars Episode IV: A New Hope, released in 1977.
-      NEWHOPE
-      # Star Wars Episode V: The Empire Strikes Back, released in 1980.
-      EMPIRE
-      # Star Wars Episode VI: Return of the Jedi, released in 1983.
-      JEDI
     }
   `);
 

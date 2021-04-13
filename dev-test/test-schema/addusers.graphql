@@ -3,3 +3,9 @@ mutation addUsers($users: [UserInput]!) {
     id
   }
 }
+
+query users {
+  allUsers {
+    id
+  }
+}

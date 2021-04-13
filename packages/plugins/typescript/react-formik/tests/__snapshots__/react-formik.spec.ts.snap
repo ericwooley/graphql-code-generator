@@ -6,24 +6,17 @@ exports[`React Apollo Forms should generate a Form 1`] = `
  * Formik Forms
  * *************************/
 
-export const createReviewForEpisodeDefaultValues = {
-  episode: undefined,
-review: undefined
+export const addUsersDefaultValues = {
+  users: undefined
 };
 
-export interface CreateReviewForEpisodeFormVariables {
-  episode: string,
-review: ReviewInput
+export interface AddUsersFormVariables {
+  users: UserInput
 }
-export const CreateReviewForEpisodeForm = ({  initialValues, onSubmit, ...formikProps}: FormikConfig<CreateReviewForEpisodeFormVariables>) => {
-  return (<Formik onSubmit={onSubmit} initialValues={{...createReviewForEpisodeDefaultValues, ...initialValues}} {...formikProps}>
+export const AddUsersForm = ({  initialValues, onSubmit, ...formikProps}: FormikConfig<AddUsersFormVariables>) => {
+  return (<Formik onSubmit={onSubmit} initialValues={{...addUsersDefaultValues, ...initialValues}} {...formikProps}>
     <Form>
-    <label><h5>episode</h5><input name=\\"episode\\" type=\\"string\\" /></label>
-    <div><h4>review</h4><label><h5>review.stars</h5><input name=\\"review.stars\\" type=\\"Scalars.Int\\" /></label>
-  <label><h5>review.commentary</h5><input name=\\"review.commentary\\" type=\\"Scalars.String\\" /></label>
-  <div><h4>review.favoriteColor</h4><label><h5>review.favoriteColor.red</h5><input name=\\"review.favoriteColor.red\\" type=\\"Scalars.Int\\" /></label>
-  <label><h5>review.favoriteColor.green</h5><input name=\\"review.favoriteColor.green\\" type=\\"Scalars.Int\\" /></label>
-  <label><h5>review.favoriteColor.blue</h5><input name=\\"review.favoriteColor.blue\\" type=\\"Scalars.Int\\" /></label></div></div>
+    <label><h5>users</h5><input name=\\"users\\" type=\\"UserInput\\" /></label>
     </Form>
   </Formik>)
 };
