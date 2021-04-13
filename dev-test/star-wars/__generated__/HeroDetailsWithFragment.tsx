@@ -4,8 +4,6 @@ import { HeroDetails_Human_Fragment, HeroDetails_Droid_Fragment } from './HeroDe
 import { gql } from '@apollo/client';
 import { HeroDetailsFragmentDoc } from './HeroDetailsFragment';
 import * as Apollo from '@apollo/client';
-import * as React from 'react';
-import { Formik, Form, FormikConfig } from 'formik';
 const defaultOptions = {};
 export type HeroDetailsWithFragmentQueryVariables = Types.Exact<{
   episode?: Types.Maybe<Types.Episode>;
@@ -66,7 +64,3 @@ export type HeroDetailsWithFragmentQueryResult = Apollo.QueryResult<
   HeroDetailsWithFragmentQuery,
   HeroDetailsWithFragmentQueryVariables
 >;
-
-/****************************
- * Formik Forms
- * *************************/

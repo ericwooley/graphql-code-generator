@@ -18,12 +18,16 @@ export type User = {
   id: Scalars['Int'];
   name: Scalars['String'];
   email: Scalars['String'];
+  friends: Array<Maybe<User>>;
 };
 
 export type UserInput = {
   id: Scalars['Int'];
   name: Scalars['String'];
   email: Scalars['String'];
+  mother?: Maybe<UserInput>;
+  father?: Maybe<UserInput>;
+  friends: Array<Maybe<UserInput>>;
 };
 
 export type QueryRoot = {
@@ -59,40 +63,23 @@ export type AddUsersMutation = { __typename?: 'MutationRoot' } & {
   addUsers?: Maybe<Array<Maybe<{ __typename?: 'User' } & Pick<User, 'id'>>>>;
 };
 
+export type UsersQueryVariables = Exact<{ [key: string]: never }>;
+
+export type UsersQuery = { __typename?: 'QueryRoot' } & {
+  allUsers: Array<Maybe<{ __typename?: 'User' } & Pick<User, 'id'>>>;
+};
+
 /****************************
  * Formik Forms
  * *************************/
 
-export const addUsersDefaultValues = {
-  users: undefined,
-};
+export const addUsersDefaultValues = {};
 
-export interface AddUsersFormVariables {
-  users: UserInput[];
-}
+export interface AddUsersFormVariables {}
 export const AddUsersForm = ({ initialValues, onSubmit, ...formikProps }: FormikConfig<AddUsersFormVariables>) => {
   return (
     <Formik onSubmit={onSubmit} initialValues={{ ...addUsersDefaultValues, ...initialValues }} {...formikProps}>
-      <Form>
-        <div>
-          <h4>users</h4>
-          <div>
-            <h4>users[i][i]</h4>
-            <label>
-              <h5>users[i][i].id</h5>
-              <input name="users[i][i].id" type="Scalars.Int" />
-            </label>
-            <label>
-              <h5>users[i][i].name</h5>
-              <input name="users[i][i].name" type="Scalars.String" />
-            </label>
-            <label>
-              <h5>users[i][i].email</h5>
-              <input name="users[i][i].email" type="Scalars.String" />
-            </label>
-          </div>
-        </div>
-      </Form>
+      <Form></Form>
     </Formik>
   );
 };

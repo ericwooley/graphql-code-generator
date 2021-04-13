@@ -16,12 +16,12 @@ export interface AddUsersFormVariables {
 export const AddUsersForm = ({  initialValues, onSubmit, ...formikProps}: FormikConfig<AddUsersFormVariables>) => {
   return (<Formik onSubmit={onSubmit} initialValues={{...addUsersDefaultValues, ...initialValues}} {...formikProps}>
     <Form>
-    <div><h4>users</h4><label><h5>users</h5><input name=\\"users\\" type=\\"Scalars.Int\\" /></label>
-  <label><h5>users</h5><input name=\\"users\\" type=\\"Scalars.String\\" /></label>
-  <label><h5>users</h5><input name=\\"users\\" type=\\"Scalars.String\\" /></label>
-  <label><h5>users</h5><input name=\\"users\\" type=\\"UserInput\\" /></label>
-  <label><h5>users</h5><input name=\\"users\\" type=\\"UserInput\\" /></label>
-  <label><h5>users</h5><input name=\\"users\\" type=\\"UserInput\\" /></label></div>
+    <div><h4>users</h4><label><h5>users.id</h5><input name=\\"users.id\\" type=\\"Scalars.Int\\" /></label>
+  <label><h5>users.name</h5><input name=\\"users.name\\" type=\\"Scalars.String\\" /></label>
+  <label><h5>users.email</h5><input name=\\"users.email\\" type=\\"Scalars.String\\" /></label>
+  <label><h5>users.mother</h5><input name=\\"users.mother\\" type=\\"UserInput\\" /></label>
+  <label><h5>users.father</h5><input name=\\"users.father\\" type=\\"UserInput\\" /></label>
+  <label><h5>users.friends</h5><input name=\\"users.friends\\" type=\\"UserInput\\" /></label></div>
     </Form>
   </Formik>)
 };

@@ -2,8 +2,6 @@ import * as Types from '../types.d';
 
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
-import * as React from 'react';
-import { Formik, Form, FormikConfig } from 'formik';
 const defaultOptions = {};
 export type HeroAppearsInQueryVariables = Types.Exact<{ [key: string]: never }>;
 
@@ -53,7 +51,3 @@ export function useHeroAppearsInLazyQuery(
 export type HeroAppearsInQueryHookResult = ReturnType<typeof useHeroAppearsInQuery>;
 export type HeroAppearsInLazyQueryHookResult = ReturnType<typeof useHeroAppearsInLazyQuery>;
 export type HeroAppearsInQueryResult = Apollo.QueryResult<HeroAppearsInQuery, HeroAppearsInQueryVariables>;
-
-/****************************
- * Formik Forms
- * *************************/

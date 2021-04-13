@@ -19,6 +19,7 @@ import {
   GraphQLNonNull,
   isNamedType,
 } from 'graphql';
+import type {} from 'graphql';
 import { Types } from '@graphql-codegen/plugin-helpers';
 import { camelCase, pascalCase } from 'change-case-all';
 import { TypeMap } from 'graphql/type/schema';
@@ -184,7 +185,10 @@ export function namedTypeToTypeNodeMetaData(
         .map(([childName, child]) => {
           return [
             childName,
-            scalarTypeConfigToNodeMetaData(child, name, types, depth + 1, [...parentTree, typeDef.name]),
+            scalarTypeConfigToNodeMetaData(child, `${name}.${childName}`, types, depth + 1, [
+              ...parentTree,
+              typeDef.name,
+            ]),
           ];
         })
     );

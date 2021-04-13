@@ -2,8 +2,6 @@ import * as Types from '../types.d';
 
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
-import * as React from 'react';
-import { Formik, Form, FormikConfig } from 'formik';
 const defaultOptions = {};
 export type TwoHeroesQueryVariables = Types.Exact<{ [key: string]: never }>;
 
@@ -55,7 +53,3 @@ export function useTwoHeroesLazyQuery(
 export type TwoHeroesQueryHookResult = ReturnType<typeof useTwoHeroesQuery>;
 export type TwoHeroesLazyQueryHookResult = ReturnType<typeof useTwoHeroesLazyQuery>;
 export type TwoHeroesQueryResult = Apollo.QueryResult<TwoHeroesQuery, TwoHeroesQueryVariables>;
-
-/****************************
- * Formik Forms
- * *************************/

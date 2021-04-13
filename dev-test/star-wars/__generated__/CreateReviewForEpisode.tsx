@@ -2,8 +2,6 @@ import * as Types from '../types.d';
 
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
-import * as React from 'react';
-import { Formik, Form, FormikConfig } from 'formik';
 const defaultOptions = {};
 export type CreateReviewForEpisodeMutationVariables = Types.Exact<{
   episode: Types.Episode;
@@ -60,63 +58,3 @@ export type CreateReviewForEpisodeMutationOptions = Apollo.BaseMutationOptions<
   CreateReviewForEpisodeMutation,
   CreateReviewForEpisodeMutationVariables
 >;
-
-/****************************
- * Formik Forms
- * *************************/
-
-export const createReviewForEpisodeDefaultValues = {
-  episode: undefined,
-  review: undefined,
-};
-
-export interface CreateReviewForEpisodeFormVariables {
-  episode: string;
-  review: ReviewInput;
-}
-export const CreateReviewForEpisodeForm = ({
-  initialValues,
-  onSubmit,
-  ...formikProps
-}: FormikConfig<CreateReviewForEpisodeFormVariables>) => {
-  return (
-    <Formik
-      onSubmit={onSubmit}
-      initialValues={{ ...createReviewForEpisodeDefaultValues, ...initialValues }}
-      {...formikProps}
-    >
-      <Form>
-        <label>
-          <h5>episode</h5>
-          <input name="episode" type="string" />
-        </label>
-        <div>
-          <h4>review</h4>
-          <label>
-            <h5>review.stars</h5>
-            <input name="review.stars" type="Scalars.Int" />
-          </label>
-          <label>
-            <h5>review.commentary</h5>
-            <input name="review.commentary" type="Scalars.String" />
-          </label>
-          <div>
-            <h4>review.favoriteColor</h4>
-            <label>
-              <h5>review.favoriteColor.red</h5>
-              <input name="review.favoriteColor.red" type="Scalars.Int" />
-            </label>
-            <label>
-              <h5>review.favoriteColor.green</h5>
-              <input name="review.favoriteColor.green" type="Scalars.Int" />
-            </label>
-            <label>
-              <h5>review.favoriteColor.blue</h5>
-              <input name="review.favoriteColor.blue" type="Scalars.Int" />
-            </label>
-          </div>
-        </div>
-      </Form>
-    </Formik>
-  );
-};

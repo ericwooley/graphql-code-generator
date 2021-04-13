@@ -1,8 +1,6 @@
 import * as Types from '../types.d';
 
 import { gql } from '@apollo/client';
-import * as React from 'react';
-import { Formik, Form, FormikConfig } from 'formik';
 export type HeroDetails_Human_Fragment = { __typename?: 'Human' } & Pick<Types.Human, 'height' | 'name'>;
 
 export type HeroDetails_Droid_Fragment = { __typename?: 'Droid' } & Pick<Types.Droid, 'primaryFunction' | 'name'>;
@@ -20,7 +18,3 @@ export const HeroDetailsFragmentDoc = gql`
     }
   }
 `;
-
-/****************************
- * Formik Forms
- * *************************/
